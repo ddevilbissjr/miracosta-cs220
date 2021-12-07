@@ -1,0 +1,28 @@
+class Main {
+   function void main() {
+      var int x, y;
+      let x = 0;
+      let y = 0;
+      while(true) {
+         do Screen.setColor(true);
+         do Screen.drawRectangle(x, y, x + 30, y + 30);
+         do Sys.wait(100);
+         do Screen.setColor(false);
+         do Screen.drawRectangle(x, y, x + 30, y + 30);
+      
+         if ((~(x = 480)) & (~(y > 0))) {
+            let x = x + 10;
+         }
+         if ((x = 480) & (~(y = 320))) {
+            let y = y + 10;
+         }
+         if (x = 220) {
+            let x = x - 10;
+         }
+         if ((x = 0) & (~(y < 0))) {
+            let y = y - 10;
+         }
+      }
+      return;
+   }
+}
