@@ -1,0 +1,203 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Memory.jack
+// Author: John Rollinson, 11/17/2017
+
+/**
+ * Memory operations library:
+ * This library provides two services: direct access to the computer's main
+ * memory (RAM), and allocation and recycling of memory blocks. The Hack RAM
+ * consists of 32,768 words, each holding a 16-bit binary number.
+ */ 
+
+class Memory 
+{
+    static Array memory;
+    static Array memoryBottom;
+    static Array freeList;
+
+	static int heapBase;
+    static int heapBottom;
+
+    static int LENGTH; // the segment's length.
+    static int NEXT; // pointer to the next segment in the list.
+    static int ALLOC_LENGTH; // the allocated block's length.
+    
+    //==================================================================
+
+    //DESCRIPTION: Initializes memory parameters.
+	//PRECONDITION: Assumes that memory parameters are declared and,
+	//					ready for initialization.
+	//POSTCONDITION: All memory parameters have been initialized.
+    function void init() 
+    {
+        let heapBase = 2048;
+        let heapBottom = 16384;
+
+        let memory = 0;
+        let freeList = heapBase;
+        
+        let LENGTH = 0;
+        let NEXT = 1;
+        
+        let freeList[LENGTH] = heapBottom - heapBase; 
+        let freeList[NEXT] = null; 
+
+        let ALLOC_LENGTH = -1; // block[-1] store the size of the allocated block.
+        return;
+    }
+
+    //DESCRIPTION: Returns the value of the main memory at the given address.
+	//PRECONDITION: Assumes that the parameter is a valid address.
+	//POSTCONDITION: Returns the value stored in memory[address].
+    function int peek(int address) 
+    {
+        return memory[address];
+    }
+
+    //DESCRIPTION: Sets the value of the main memory at this address to
+    //					specified value. 
+	//PRECONDITION: Assumes that the address is valid for which the value
+	//					will be stored at.
+	//POSTCONDITION: value is stored in memory @ address.
+    function void poke(int address, int value) 
+    {
+        let memory[address] = value;
+        return;
+    }
+
+    //DESCRIPTION: Finds the best allocated block for the specified size.
+	//PRECONDITION: Assumes that all the memory parameters have been initialized.
+	//POSTCONDITION: Returns the best block for the specified size if one
+	//					was found, or returns null beacuse all blocks are
+	//					full, or freelist is the block.
+    function Array bestFit(int size)
+    {
+        var Array currentBlock, bestBlock;
+        var int bestSize, currentSize;
+
+        let bestBlock = null;
+        let bestSize = heapBottom - heapBase;
+        let currentBlock = freeList;
+
+        if(currentBlock[NEXT] = null)
+        {
+            return currentBlock;
+        }
+
+        while(~(currentBlock = null))
+        {
+            let currentSize = currentBlock[LENGTH] - 1;
+
+            if(~(currentSize < size) & (currentSize < bestSize))
+            {
+                let bestBlock = currentBlock;
+                let bestSize = currentSize;
+            }
+
+            let currentBlock = currentBlock[NEXT];
+        }
+        
+        return bestBlock;
+    }
+
+    //DESCRIPTION: Finds and allocates from the heap a memory block of
+    //					the specified size and returns a reference to its
+    //					base address.
+	//PRECONDITION: Assumes that all the memory parameters have been initialized.
+	//POSTCONDITION: Allocates a memory block in the heap, and returns
+	//					the reference to its base address.
+    function int alloc(int size) 
+    {
+        var Array foundBlock, nextBlock, result;
+
+        let foundBlock = Memory.bestFit(size);
+        let result = foundBlock + 1;
+
+        if(~(foundBlock = null)) //alloc this block... 
+        {
+            if(foundBlock[LENGTH] > (size + 3)) //check if only need to alloc part of this block or the whole block 
+            {
+                let nextBlock = foundBlock + size + 1;
+                let nextBlock[NEXT] = foundBlock[NEXT];
+                let nextBlock[LENGTH] = foundBlock[LENGTH] - size - 1;
+                let result[ALLOC_LENGTH] = size + 1;
+                let freeList = nextBlock;
+            }
+            else //alloc the whole block
+            {
+                let nextBlock = foundBlock[NEXT];
+                let result[ALLOC_LENGTH] = foundBlock[LENGTH];
+            }
+
+            let foundBlock = nextBlock;
+        }
+
+        return result;
+    }
+
+    //DESCRIPTION: De-allocates the given object and frees its space.
+	//PRECONDITION: Assumes that all the memory parameters have been initialized.
+	//POSTCONDITION: The object has been removed from memory, and the
+	//					space it was occupying is now open.
+    function void deAlloc(int object) 
+    {
+        var Array preBlock, nextBlock;
+        var int size;
+
+        let size = object[ALLOC_LENGTH];
+        let object = object - 1; //must consider block[-1]
+        let preBlock = Memory.findPreFree(object);
+
+        if(preBlock = null)
+        {
+            let object[LENGTH] = size;
+            let object[NEXT] = freeList;
+            let freeList = object;
+        }
+        else
+        {
+            if((preBlock + preBlock[LENGTH]) = object)
+            {
+                let preBlock[LENGTH] = preBlock[LENGTH] + size;
+                let object = preBlock;
+            }
+            else
+            {
+                let object[LENGTH] = size;
+                let object[NEXT] = preBlock[NEXT];
+                let preBlock[NEXT] = object;
+            }
+        }
+        if((object + object[LENGTH]) = object[NEXT])
+        {
+            let nextBlock = object[NEXT];
+            let object[LENGTH] = object[LENGTH] + nextBlock[LENGTH];
+            let object[NEXT] = nextBlock[NEXT];
+        }
+        
+        return;
+    }    
+
+    //DESCRIPTION: Helper function for deAlloc, finds the previous free block.
+	//PRECONDITION: Assumes that all the memory parameters have been initialized.
+	//POSTCONDITION: Returns the previous free block if one was found.
+    function Array findPreFree(int object)
+    {
+        var Array preBlock;
+        
+        if(freeList > object) //No free block
+        {
+            return null;
+        }
+
+        let preBlock = freeList;
+        
+        while(~(preBlock[NEXT] = null) & (preBlock[NEXT] < object))
+        {
+            let preBlock = preBlock[NEXT];
+        }
+        return preBlock;
+    }
+}

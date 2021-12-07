@@ -1,0 +1,179 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Math.jack
+// Author: John Rollinson, 11/17/2017
+
+/**
+ * A library of commonly used mathematical functions.
+ * Note: Jack compilers implement multiplication and division using OS method calls.
+ */
+ 
+class Math
+{
+	static int powersOfTwo;
+	
+	//DESCRIPTION: Initializes the library.
+	//PRECONDITION: Assumes that powersOfTwo[] has been declared.
+	//POSTCONDITION: powersOfTwo[] has been initialized and returned.
+    function void init()
+    {
+		let powersOfTwo = Array.new(16);
+		
+        let powersOfTwo[0] = 1;
+        let powersOfTwo[1] = 2;
+        let powersOfTwo[2] = 4;
+        let powersOfTwo[3] = 8;
+        let powersOfTwo[4] = 16;
+        let powersOfTwo[5] = 32;
+        let powersOfTwo[6] = 64;
+        let powersOfTwo[7] = 128;
+        let powersOfTwo[8] = 256;
+        let powersOfTwo[9] = 512;
+        let powersOfTwo[10] = 1024;
+        let powersOfTwo[11] = 2048;
+        let powersOfTwo[12] = 4096;
+        let powersOfTwo[13] = 8192;
+        let powersOfTwo[14] = 16384;
+        let powersOfTwo[15] = 16384+16384;
+        
+        return;
+    }
+
+    //DESCRIPTION: Performs the absoulute value operation on value 'x'.
+	//PRECONDITION: Assumes that int x is a valid integer.
+	//POSTCONDITION: Returns the absolute value of x.
+    function int abs(int x)
+    {
+        if(x < 0)
+        {
+            return -x;
+        }
+        
+        return x;
+    }
+
+    /** When a Jack compiler detects the multiplication operator '*' in the 
+     *  program's code, it handles it by invoking this method. In other words,
+     *  the Jack expressions x*y and multiply(x,y) return the same value.
+     */
+    //DESCRIPTION: Performs a multiplication operation of the given parameters.
+	//PRECONDITION: Assumes that int 'x' and 'y' are valid integers.
+	//POSTCONDITION: Returns the product of int 'x' and int 'y'.
+    function int multiply(int x, int y)
+    {
+        var int sum, shiftX, carry;
+        
+        let sum = 0;
+        let shiftX = x;
+        let carry = 1;
+        
+        while(~(carry = 0)) //16 bit numbers.
+        { 
+            if(~(y & carry = 0))
+            {
+                let sum = sum + shiftX;
+            }
+            
+            let shiftX = shiftX + shiftX;
+            let carry = carry + carry;
+        }
+        
+        return sum;
+    }
+
+    /** When a Jack compiler detects the Division operator '/' in the 
+     *  program's code, it handles it by invoking this method. In other words,
+     *  the Jack expressions x/y and divide(x,y) return the same value.
+     */
+	//DESCRIPTION: Performs a division operation of the given parameters.
+	//PRECONDITION: Assumes that int 'x' and 'y' are valid integers.
+	//POSTCONDITION: Returns the integer part of x/y. 
+    function int divide(int x, int y) 
+    {
+        var int q, result;
+        var boolean position;
+
+        let position = ((x < 0) = (y < 0));
+
+        let x = Math.abs(x);
+        let y = Math.abs(y);
+
+        if(y > x)
+        {
+            return 0;
+        }
+
+        let q = Math.divide(x,y + y);
+        
+        if((x - (2 * q * y)) < y)
+        {
+            let result = q + q;
+        }
+        else
+        {
+            let result = q + q + 1;
+        }
+
+        if(position)
+        {
+            return result;
+        }
+        else
+        {
+            return -result;
+        }
+    }
+
+	//DESCRIPTION: Finds the square root of the given parameter.
+	//PRECONDITION: Assumes that int 'x' is a valid integer value.
+	//POSTCONDITION: Returns the integer part of the square root of x.
+    function int sqrt(int x) 
+    {
+        var int index, answer, approx, sqr;
+        
+        let answer = 0;
+        let index = 7; 
+        
+        while( ~(index < 0) ) 
+        {
+            let approx = answer + powersOfTwo[index];
+            let sqr = approx * approx;
+            
+            if( ~(sqr > x) & (sqr > 0) ) // handles the overflow.
+            {    
+                let answer = approx;
+            }
+            
+            let index = index - 1;
+        }
+        
+        return answer;
+    }
+
+    //DESCRIPTION: Compares the parameters and returns the larger of the two.
+	//PRECONDITION: Assumes that the two parameters are NOT equal.
+	//POSTCONDITION: Returns the greater of the two numbers.
+    function int max(int a, int b)
+    {
+        if(a > b)
+        {
+            return a;
+        }
+        
+        return b;
+    }
+
+    //DESCRIPTION: Compares the parameters and returns the smaller of the two.
+	//PRECONDITION: Assumes that the two parameters are NOT equal.
+	//POSTCONDITION: Returns the lesser of the two numbers.
+    function int min(int a, int b)
+    {
+        if(a < b)
+        {
+            return a;
+        }
+        
+        return b;
+    }
+}

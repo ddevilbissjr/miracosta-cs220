@@ -1,0 +1,104 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Keyboard.jack
+// Author: John Rollinson, 11/17/2017
+
+/**
+ * A library for handling user input from the keyboard.
+ */
+ 
+class Keyboard 
+{
+    static Array keyboard;
+    
+    //DESCRIPTION: Initializes the keyboard.
+	//PRECONDITION: Assumes that keyboard has been declared.
+	//POSTCONDITION: The Keyboard array has been initialized.
+    function void init() 
+    {
+        let keyboard = 24576;
+        return;
+    } 
+
+
+    //DESCRIPTION: Returns the ASCII code (as char) of the currently pressed key,
+    //					or 0 if no key is currently pressed. Recognizes all 
+    //					ASCII characters, as well as certain action keys.
+	//PRECONDITION: Assumes that the keyboard array has been initialized.
+	//POSTCONDITION: Returns the value of the key currently being pressed. 
+    function char keyPressed() 
+    {
+        return keyboard[0];
+    }
+
+    //DESCRIPTION: Reads the next character from the keyboard. Waits
+    //					until a key is pressed and then released, then
+    //					echoes the key to the screen.
+	//PRECONDITION: Assumes that the keyboard array has been initialized.
+	//POSTCONDITION: Echoes the key to the screen, and returns the char 
+	//					of the key currently being pressed.
+    function char readChar() 
+    {
+        var char key;
+        
+        while( Keyboard.keyPressed() = 0 ) 
+        {
+			
+        }
+        
+        let key = Keyboard.keyPressed();
+        
+        while( ~(Keyboard.keyPressed() = 0) ) 
+        {
+        
+        }
+        
+        do Output.printChar(key);
+        return key;
+    }
+	
+    //DESCRIPTION: Prints the message on the screen, reads the next line
+    //					until a newline char is reached from the keyboard.
+	//PRECONDITION: Assumes that keyboard has been initialized.
+	//POSTCONDITION: Returns the keys integer value until the first non-
+	//					numeric character.
+    function int readInt(String message) 
+    {
+        var String line;
+        
+        let line = Keyboard.readLine(message);
+        return line.intValue();
+    }
+    
+    //DESCRIPTION: Prints the message on the screen, reads the next line,
+	//					stopping at the newline char, from the keyboard.
+	//PRECONDITION: Assumes that keyboard has been initialized.
+	//POSTCONDITION: Message is displayed on the screen and the value is
+	//					returned. 
+    function String readLine(String message) 
+    {
+        var String line;
+        var char c;
+        
+        do Output.printString(message);
+        
+        let line = String.new(50);	// arbitrary max length for now
+        let c = Keyboard.readChar();
+        
+        while( ~(c = String.newLine()) ) 
+        {
+            if( c = String.backSpace() ) 
+            {
+                do line.eraseLastChar();
+            }
+            else 
+            {
+                do line.appendChar(c);
+            }
+            
+            let c = Keyboard.readChar();
+        }
+        return line;
+    }   
+}
